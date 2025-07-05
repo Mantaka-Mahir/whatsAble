@@ -25,10 +25,12 @@ app.use(helmet({
 // Logging middleware
 app.use(morgan('combined'));
 
-// CORS middleware
+// CORS middleware - Allow Flutter web app
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? false : true,
-    credentials: true
+    origin: ['http://localhost:58321', 'http://localhost:3000', 'http://127.0.0.1:58321'], // Flutter web ports
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parser middleware

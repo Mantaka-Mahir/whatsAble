@@ -1,0 +1,66 @@
+name: autoengage_mobile
+description: "AutoEngage Mobile Admin App - A Flutter mobile companion for managing the AutoEngage WhatsApp automation system."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI and Icons
+  cupertino_icons: ^1.0.8
+  material_design_icons_flutter: ^7.0.7296
+  flutter_svg: ^2.0.9
+  
+  # HTTP and API
+  http: ^1.2.0
+  dio: ^5.4.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Storage
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  
+  # Navigation
+  go_router: ^13.2.0
+  
+  # Utils
+  intl: ^0.19.0
+  
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  
+  # Charts for dashboard
+  fl_chart: ^0.66.2
+  
+  # Permission handling
+  permission_handler: ^11.1.0
+  
+  # Loading indicators
+  loading_animation_widget: ^1.2.0
+  
+  # Pull to refresh
+  pull_to_refresh: ^2.0.0
+  
+  # JSON annotations
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
