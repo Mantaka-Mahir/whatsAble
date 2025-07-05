@@ -1,0 +1,147 @@
+/* Custom styles for AutoEngage */
+
+.sidebar {
+    background-color: #343a40;
+    min-height: 100vh;
+}
+
+.sidebar .nav-link {
+    color: #adb5bd;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: #495057;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: #25d366 !important;
+}
+
+.stat-card {
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.message-bubble {
+    background-color: #e3f2fd;
+    border-radius: 15px 15px 15px 5px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    max-width: 70%;
+    position: relative;
+}
+
+.reply-bubble {
+    background-color: #25d366;
+    color: white;
+    border-radius: 15px 15px 5px 15px;
+    padding: 10px 14px;
+    margin: 8px 0 8px auto;
+    max-width: 70%;
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.chat-container {
+    max-height: 600px;
+    overflow-y: auto;
+    background: linear-gradient(to bottom, #e3f2fd, #f8f9fa);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.message-meta {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.reply-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 5px;
+}
+
+.status-indicator {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.status-online {
+    color: #25d366;
+}
+
+/* Animation for loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Custom scrollbar for chat container */
+.chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+    }
+
+    .message-bubble,
+    .reply-bubble {
+        max-width: 90%;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}

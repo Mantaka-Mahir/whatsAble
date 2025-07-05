@@ -1,0 +1,52 @@
+<div class="sidebar">
+    <nav class="nav flex-column p-3">
+        <a class="nav-link <%= title.includes('Dashboard') ? 'active' : '' %>" href="/dashboard">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </a>
+        <a class="nav-link <%= title.includes('Users') ? 'active' : '' %>" href="/dashboard/users">
+            <i class="fas fa-users me-2"></i>Users
+        </a>
+        <a class="nav-link <%= title.includes('Messages') ? 'active' : '' %>" href="/dashboard/messages">
+            <i class="fas fa-comments me-2"></i>Messages
+        </a>
+        <a class="nav-link <%= title.includes('Send Message') ? 'active' : '' %>" href="/dashboard/send-message">
+            <i class="fas fa-paper-plane me-2"></i>Send Message
+        </a>
+        <hr class="my-3" style="border-color: #495057;">
+        <a class="nav-link" href="#" onclick="simulateFollowup()">
+            <i class="fas fa-robot me-2"></i>Simulate Followup
+        </a>
+        <a class="nav-link" href="#" onclick="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i>Refresh Data
+        </a>
+    </nav>
+</div>
+
+<script>
+    async function simulateFollowup() {
+        try {
+            const response = await fetch('/api/simulate-followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`${result.message}\nDetails: ${JSON.stringify(result.data, null, 2)}`);
+                if (result.data.length > 0) {
+                    location.reload();
+                }
+            } else {
+                alert('Failed to simulate followup: ' + result.message);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    function refreshData() {
+        location.reload();
+    }
+</script>

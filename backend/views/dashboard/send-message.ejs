@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+        }
+
+        .sidebar .nav-link {
+            color: #adb5bd;
+        }
+
+        .sidebar .nav-link:hover {
+            color: #fff;
+        }
+
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #495057;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #25d366 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2 p-0">
+                    <%- include('../partials/sidebar') %>
+                </div>
+                <div class="col-md-10">
+                    <main class="p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h1 class="h3"><i class="fas fa-paper-plane me-2"></i>Send Message</h1>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Compose Message</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <% if (error) { %>
+                                            <div class="alert alert-danger" role="alert">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                <%= error %>
+                                            </div>
+                                            <% } %>
+
+                                                <% if (success) { %>
+                                                    <div class="alert alert-success" role="alert">
+                                                        <i class="fas fa-check-circle me-2"></i>
+                                                        <%= success %>
+                                                    </div>
+                                                    <% } %>
+
+                                                        <form method="POST" action="/dashboard/send-message">
+                                                            <div class="mb-3">
+                                                                <label for="userId" class="form-label">Select User
+                                                                    *</label>
+                                                                <select class="form-select" id="userId" name="userId"
+                                                                    required>
+                                                                    <option value="">Choose a user...</option>
+                                                                    <% users.forEach(user=> { %>
+                                                                        <option value="<%= user.id %>">
+                                                                            <%= user.name %> (<%= user.phone %>)
+                                                                        </option>
+                                                                        <% }); %>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label for="content" class="form-label">Message Content
+                                                                    *</label>
+                                                                <textarea class="form-control" id="content"
+                                                                    name="content" rows="4"
+                                                                    placeholder="Type your message here..."
+                                                                    required></textarea>
+                                                                <div class="form-text">
+                                                                    <span id="charCount">0</span>/500 characters
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label for="type" class="form-label">Message
+                                                                    Type</label>
+                                                                <select class="form-select" id="type" name="type">
+                                                                    <option value="manual">Manual</option>
+                                                                    <option value="initial">Initial</option>
+                                                                    <option value="followup">Follow-up</option>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                                <button type="button" class="btn btn-outline-secondary"
+                                                                    onclick="clearForm()">
+                                                                    <i class="fas fa-times me-1"></i>Clear
+                                                                </button>
+                                                                <button type="submit" class="btn btn-primary">
+                                                                    <i class="fas fa-paper-plane me-1"></i>Send Message
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Quick Templates</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                onclick="useTemplate('initial')">
+                                                Initial Contact
+                                            </button>
+                                            <button class="btn btn-outline-warning btn-sm"
+                                                onclick="useTemplate('followup')">
+                                                Follow-up
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm"
+                                                onclick="useTemplate('consultation')">
+                                                Consultation
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm" onclick="useTemplate('offer')">
+                                                Special Offer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Active Users</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <% if (users.length===0) { %>
+                                            <p class="text-muted">No active users</p>
+                                            <% } else { %>
+                                                <div class="list-group list-group-flush">
+                                                    <% users.slice(0, 5).forEach(user=> { %>
+                                                        <div
+                                                            class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                                            <div>
+                                                                <div class="fw-bold">
+                                                                    <%= user.name %>
+                                                                </div>
+                                                                <small class="text-muted">
+                                                                    <%= user.phone %>
+                                                                </small>
+                                                            </div>
+                                                            <button class="btn btn-sm btn-outline-primary"
+                                                                onclick="selectUser('<%= user.id %>')">
+                                                                Select
+                                                            </button>
+                                                        </div>
+                                                        <% }); %>
+                                                </div>
+                                                <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            const templates = {
+                initial: "Hi {name}! Thanks for your interest in our services. Would you like to schedule a consultation?",
+                followup: "Hi {name}! Following up on our previous conversation. Are you still interested in our services?",
+                consultation: "Hi {name}! I'd love to schedule a consultation with you. When would be a good time for you?",
+                offer: "Hi {name}! We have a special offer on our premium package. Are you interested in learning more?"
+            };
+
+            function useTemplate(type) {
+                const content = document.getElementById('content');
+                content.value = templates[type];
+                updateCharCount();
+            }
+
+            function selectUser(userId) {
+                const userSelect = document.getElementById('userId');
+                userSelect.value = userId;
+            }
+
+            function clearForm() {
+                document.getElementById('userId').value = '';
+                document.getElementById('content').value = '';
+                document.getElementById('type').value = 'manual';
+                updateCharCount();
+            }
+
+            function updateCharCount() {
+                const content = document.getElementById('content');
+                const charCount = document.getElementById('charCount');
+                charCount.textContent = content.value.length;
+
+                if (content.value.length > 500) {
+                    charCount.style.color = 'red';
+                } else {
+                    charCount.style.color = '';
+                }
+            }
+
+            document.getElementById('content').addEventListener('input', updateCharCount);
+
+            // Initialize character count
+            updateCharCount();
+        </script>
+</body>
+
+</html>
