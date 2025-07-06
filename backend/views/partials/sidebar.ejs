@@ -1,49 +1,121 @@
 <div class="sidebar">
+    <div class="p-3 text-center border-bottom border-white border-opacity-10">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+            <i class="fab fa-whatsapp fa-2x me-2"></i>
+            <h4 class="mb-0 text-white">WhatsAble</h4>
+        </div>
+        <small class="text-white-50">Customer Follow-up Automation</small>
+    </div>
+
     <nav class="nav flex-column p-3">
-        <a class="nav-link <%= title.includes('Dashboard') ? 'active' : '' %>" href="/dashboard">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-        </a>
-        <a class="nav-link <%= title.includes('Users') ? 'active' : '' %>" href="/dashboard/users">
-            <i class="fas fa-users me-2"></i>Users
-        </a>
-        <a class="nav-link <%= title.includes('Messages') ? 'active' : '' %>" href="/dashboard/messages">
-            <i class="fas fa-comments me-2"></i>Messages
-        </a>
-        <a class="nav-link <%= title.includes('Send Message') ? 'active' : '' %>" href="/dashboard/send-message">
-            <i class="fas fa-paper-plane me-2"></i>Send Message
-        </a>
-        <hr class="my-3" style="border-color: #495057;">
-        <a class="nav-link" href="#" onclick="simulateFollowup()">
-            <i class="fas fa-robot me-2"></i>Simulate Followup
-        </a>
-        <a class="nav-link" href="#" onclick="refreshData()">
-            <i class="fas fa-sync-alt me-2"></i>Refresh Data
-        </a>
+        <div class="mb-3">
+            <small class="text-white-50 text-uppercase fw-bold px-3 mb-2 d-block">Main</small>
+            <a class="nav-link <%= title.includes('Dashboard') ? 'active' : '' %>" href="/dashboard">
+                <i class="fas fa-chart-pie me-2"></i>Dashboard
+            </a>
+            <a class="nav-link <%= title.includes('Users') ? 'active' : '' %>" href="/dashboard/users">
+                <i class="fas fa-users me-2"></i>Customers
+            </a>
+            <a class="nav-link <%= title.includes('Messages') ? 'active' : '' %>" href="/dashboard/messages">
+                <i class="fas fa-comments me-2"></i>Conversations
+            </a>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-white-50 text-uppercase fw-bold px-3 mb-2 d-block">Actions</small>
+            <a class="nav-link <%= title.includes('Send Message') ? 'active' : '' %>" href="/dashboard/send-message">
+                <i class="fas fa-paper-plane me-2"></i>Send Message
+            </a>
+            <a class="nav-link" href="#" onclick="simulateFollowup()">
+                <i class="fas fa-robot me-2"></i>Run Follow-up
+            </a>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-white-50 text-uppercase fw-bold px-3 mb-2 d-block">Automation</small>
+            <a class="nav-link" href="#" onclick="showAutomationInfo()">
+                <i class="fas fa-cogs me-2"></i>Configure n8n
+            </a>
+            <a class="nav-link" href="#" onclick="showWebhookInfo()">
+                <i class="fas fa-link me-2"></i>Webhook URL
+            </a>
+        </div>
+
+        <div class="mt-auto">
+            <hr class="my-3 border-white border-opacity-10">
+            <a class="nav-link" href="#" onclick="refreshData()">
+                <i class="fas fa-sync-alt me-2"></i>Refresh Data
+            </a>
+            <a class="nav-link" href="/auth/logout">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        </div>
     </nav>
 </div>
 
 <script>
     async function simulateFollowup() {
-        try {
-            const response = await fetch('/api/simulate-followup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const result = await response.json();
+        if (confirm('🤖 Run automated follow-up campaign for customers who haven\'t responded?\n\nThis will send follow-up messages to customers based on their last interaction.')) {
+            try {
+                const response = await fetch('/api/simulate-followup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
 
-            if (result.success) {
-                alert(`${result.message}\nDetails: ${JSON.stringify(result.data, null, 2)}`);
-                if (result.data.length > 0) {
-                    location.reload();
+                if (result.success) {
+                    alert(`✅ Follow-up campaign completed!\n\n${result.message}\n\nFollow-ups sent: ${result.data.length} customers`);
+                    if (result.data.length > 0) {
+                        location.reload();
+                    }
+                } else {
+                    alert('❌ Failed to run follow-up campaign: ' + result.message);
                 }
-            } else {
-                alert('Failed to simulate followup: ' + result.message);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
             }
-        } catch (error) {
-            alert('Error: ' + error.message);
         }
+    }
+
+    function showAutomationInfo() {
+        alert(`🔧 n8n Integration Setup:
+
+1. Install n8n workflow automation
+2. Create webhook trigger in n8n
+3. Use this URL in your n8n webhook:
+   ${window.location.origin}/api/webhook
+
+4. Configure triggers for:
+   - Abandoned cart follow-ups
+   - Customer re-engagement
+   - Order confirmations
+
+This will automate your customer follow-up process!`);
+    }
+
+    function showWebhookInfo() {
+        const webhookUrl = `${window.location.origin}/api/webhook`;
+        navigator.clipboard.writeText(webhookUrl).then(() => {
+            alert(`📋 Webhook URL copied to clipboard!
+
+${webhookUrl}
+
+Use this URL in:
+- n8n workflows
+- Zapier integrations
+- Custom applications
+- E-commerce platforms
+
+Send POST requests with customer data to trigger automated follow-ups.`);
+        }).catch(() => {
+            alert(`📋 Webhook URL:
+
+${webhookUrl}
+
+Use this URL in your automation tools and e-commerce platforms to trigger customer follow-ups.`);
+        });
     }
 
     function refreshData() {

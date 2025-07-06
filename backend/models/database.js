@@ -13,27 +13,27 @@ const sampleUsers = [
     {
         id: uuidv4(),
         name: 'John Doe',
-        phone: '+1234567890',
+        phoneNumber: '+1234567890',
         email: 'john@example.com',
-        status: 'active',
+        isActive: true,
         createdAt: new Date('2024-01-15'),
         lastSeen: new Date()
     },
     {
         id: uuidv4(),
         name: 'Jane Smith',
-        phone: '+1987654321',
+        phoneNumber: '+1987654321',
         email: 'jane@example.com',
-        status: 'active',
+        isActive: true,
         createdAt: new Date('2024-01-20'),
         lastSeen: new Date(Date.now() - 3600000) // 1 hour ago
     },
     {
         id: uuidv4(),
         name: 'Mike Johnson',
-        phone: '+1122334455',
+        phoneNumber: '+1122334455',
         email: 'mike@example.com',
-        status: 'inactive',
+        isActive: false,
         createdAt: new Date('2024-01-10'),
         lastSeen: new Date(Date.now() - 86400000) // 1 day ago
     }

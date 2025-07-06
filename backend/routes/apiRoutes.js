@@ -10,6 +10,7 @@ router.post('/webhook', ApiController.processWebhook);
 router.use(requireAuth);
 
 // Message endpoints
+router.get('/messages', ApiController.getAllMessages);
 router.get('/messages/:userId', ApiController.getMessagesForUser);
 router.put('/messages/:messageId/read', ApiController.markMessageAsRead);
 router.post('/messages/:messageId/reply', ApiController.replyToMessage);

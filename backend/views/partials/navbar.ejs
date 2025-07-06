@@ -1,25 +1,153 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/dashboard">
-            <i class="fab fa-whatsapp me-2"></i>AutoEngage
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <i class="fab fa-whatsapp me-2 text-success"></i>
+            <span class="fw-bold">WhatsAble</span>
+            <span class="badge bg-success ms-2 small">Business</span>
         </a>
 
-        <div class="navbar-nav ms-auto">
+        <div class="d-flex align-items-center">
+            <!-- Notification Bell -->
+            <div class="me-3">
+                <button class="btn btn-outline-secondary btn-sm position-relative" onclick="showNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        3
+                        <span class="visually-hidden">unread notifications</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="me-3">
+                <span class="badge bg-success d-flex align-items-center">
+                    <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>
+                    System Online
+                </span>
+            </div>
+
+            <!-- User Dropdown -->
             <div class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-user me-1"></i>
-                    <%= admin.username %>
+                <a class="nav-link dropdown-toggle d-flex align-items-center text-dark" href="#" role="button"
+                    data-bs-toggle="dropdown">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 32px; height: 32px;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="d-none d-md-block">
+                        <div class="fw-semibold">
+                            <%= admin.username %>
+                        </div>
+                        <small class="text-muted">Business Owner</small>
+                    </div>
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <h6 class="dropdown-header">Account</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="#" onclick="showProfile()">
+                            <i class="fas fa-user-circle me-2"></i>Profile
+                        </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="showSettings()">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                    <li>
+                        <h6 class="dropdown-header">Business</h6>
                     </li>
+                    <li><a class="dropdown-item" href="#" onclick="showBilling()">
+                            <i class="fas fa-credit-card me-2"></i>Billing
+                        </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="showAnalytics()">
+                            <i class="fas fa-chart-bar me-2"></i>Analytics
+                        </a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#" onclick="showHelp()">
+                            <i class="fas fa-question-circle me-2"></i>Help & Support
+                        </a></li>
+                    <li><a class="dropdown-item text-danger" href="/auth/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
                 </ul>
             </div>
         </div>
     </div>
 </nav>
+
+<script>
+    function showNotifications() {
+        alert(`🔔 Notifications:
+
+• 3 customers haven't responded to follow-ups
+• Automation campaign completed successfully  
+• 2 new customer inquiries received
+
+Click to view detailed notifications.`);
+    }
+
+    function showProfile() {
+        alert(`👤 Profile Settings:
+
+• Business Name: Your Business
+• Contact: ${admin.username}
+• Plan: Professional
+• WhatsApp Integration: Connected
+
+Profile management coming soon!`);
+    }
+
+    function showSettings() {
+        alert(`⚙️ Business Settings:
+
+• Follow-up timing configuration
+• Message templates
+• Automation rules
+• WhatsApp Business settings
+• n8n workflow integration
+
+Settings panel coming soon!`);
+    }
+
+    function showBilling() {
+        alert(`💳 Billing Information:
+
+• Current Plan: Professional
+• Monthly Usage: 850/1000 messages
+• Next Billing: Next month
+• Payment Method: ****1234
+
+Billing management coming soon!`);
+    }
+
+    function showAnalytics() {
+        alert(`📊 Business Analytics:
+
+• Response Rate: 68%
+• Customer Retention: 82%
+• Best Response Time: 2-4 PM
+• Follow-up Success: 75%
+• Monthly Growth: +12%
+
+Detailed analytics coming soon!`);
+    }
+
+    function showHelp() {
+        alert(`❓ Help & Support:
+
+📚 Documentation:
+• Getting Started Guide
+• n8n Integration Tutorial
+• Best Practices
+
+🛟 Support:
+• Live Chat: Available 9 AM - 6 PM
+• Email: support@whatsable.com
+• Phone: +1 (555) 123-4567
+
+Support center coming soon!`);
+    }
+</script>

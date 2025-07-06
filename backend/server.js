@@ -25,9 +25,31 @@ app.use(helmet({
 // Logging middleware
 app.use(morgan('combined'));
 
-// CORS middleware - Allow Flutter web app
+// CORS middleware - Allow Flutter web app and local web requests
 app.use(cors({
-    origin: ['http://localhost:58321', 'http://localhost:3000', 'http://127.0.0.1:58321'], // Flutter web ports
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, same-origin web form submissions)
+        if (!origin) return callback(null, true);
+
+        // Allow localhost on any port for development
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            return callback(null, true);
+        }
+
+        // For production, you would specify exact origins
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:58321',
+            'http://127.0.0.1:58321'
+        ];
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        }
+
+        // For development, be more permissive
+        return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

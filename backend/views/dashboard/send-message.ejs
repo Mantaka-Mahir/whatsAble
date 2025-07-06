@@ -4,42 +4,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= title %>
-    </title>
+    <title>Send Message - WhatsAble Business</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .sidebar {
-            background-color: #343a40;
+            background: linear-gradient(180deg, #25d366 0%, #128c7e 100%);
             min-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar .nav-link {
-            color: #adb5bd;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
         }
 
         .sidebar .nav-link:hover {
-            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .sidebar .nav-link.active {
-            color: #fff;
-            background-color: #495057;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
-        .card {
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-header {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+            color: #2d5a2d;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #25d366;
+        }
+
+        .message-composer {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         }
 
-        .navbar-brand {
+        .template-card,
+        .users-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .template-btn {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .template-btn:hover {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            border-color: #25d366;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .user-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .user-item:hover {
+            background: #e8f5e8;
+            border-color: #25d366;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: bold;
-            color: #25d366 !important;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #25d366;
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+        }
+
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+
+        .form-select:focus {
+            border-color: #25d366;
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-whatsapp:hover {
+            background: linear-gradient(135deg, #128c7e, #0d6e61);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .char-counter {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .char-counter.warning {
+            color: #ffc107;
+        }
+
+        .char-counter.danger {
+            color: #dc3545;
+        }
+
+        .message-preview {
+            background: linear-gradient(135deg, #f8fff9, #ffffff);
+            border: 2px solid #e8f5e8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-style: italic;
+            color: #495057;
         }
     </style>
 </head>
@@ -53,137 +189,189 @@
                 </div>
                 <div class="col-md-10">
                     <main class="p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h1 class="h3"><i class="fas fa-paper-plane me-2"></i>Send Message</h1>
+                        <!-- Header Section -->
+                        <div class="stats-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h2 class="mb-2"><i class="fab fa-whatsapp me-2"></i>Send WhatsApp Message</h2>
+                                    <p class="mb-0 opacity-90">Compose and send messages to your customers instantly</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <i class="fas fa-paper-plane fa-3x opacity-50"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-8">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Compose Message</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <% if (error) { %>
-                                            <div class="alert alert-danger" role="alert">
-                                                <i class="fas fa-exclamation-circle me-2"></i>
-                                                <%= error %>
-                                            </div>
-                                            <% } %>
+                                <div class="message-composer">
+                                    <h4 class="mb-4"><i class="fas fa-edit me-2 text-success"></i>Compose Message</h4>
 
-                                                <% if (success) { %>
-                                                    <div class="alert alert-success" role="alert">
-                                                        <i class="fas fa-check-circle me-2"></i>
-                                                        <%= success %>
-                                                    </div>
-                                                    <% } %>
+                                    <% if (error) { %>
+                                        <div class="alert alert-danger border-0 rounded-3 mb-4" role="alert">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>Error:</strong>
+                                            <%= error %>
+                                        </div>
+                                        <% } %>
 
-                                                        <form method="POST" action="/dashboard/send-message">
-                                                            <div class="mb-3">
-                                                                <label for="userId" class="form-label">Select User
-                                                                    *</label>
-                                                                <select class="form-select" id="userId" name="userId"
-                                                                    required>
-                                                                    <option value="">Choose a user...</option>
-                                                                    <% users.forEach(user=> { %>
-                                                                        <option value="<%= user.id %>">
-                                                                            <%= user.name %> (<%= user.phone %>)
-                                                                        </option>
-                                                                        <% }); %>
-                                                                </select>
-                                                            </div>
+                                            <% if (success) { %>
+                                                <div class="alert alert-success border-0 rounded-3 mb-4" role="alert">
+                                                    <i class="fas fa-check-circle me-2"></i>
+                                                    <strong>Success:</strong>
+                                                    <%= success %>
+                                                </div>
+                                                <% } %>
 
-                                                            <div class="mb-3">
-                                                                <label for="content" class="form-label">Message Content
-                                                                    *</label>
-                                                                <textarea class="form-control" id="content"
-                                                                    name="content" rows="4"
-                                                                    placeholder="Type your message here..."
-                                                                    required></textarea>
-                                                                <div class="form-text">
+                                                    <form method="POST" action="/dashboard/send-message">
+                                                        <div class="mb-4">
+                                                            <label for="userId" class="form-label fw-semibold">
+                                                                <i class="fas fa-user me-2"></i>Select Customer *
+                                                            </label>
+                                                            <select class="form-select" id="userId" name="userId"
+                                                                required>
+                                                                <option value="">Choose a customer...</option>
+                                                                <% users.forEach(user=> { %>
+                                                                    <option value="<%= user.id %>">
+                                                                        <%= user.name %> (<%= user.phoneNumber ||
+                                                                                user.phone %>)
+                                                                    </option>
+                                                                    <% }); %>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="mb-4">
+                                                            <label for="content" class="form-label fw-semibold">
+                                                                <i class="fas fa-comment-dots me-2"></i>Message Content
+                                                                *
+                                                            </label>
+                                                            <textarea class="form-control" id="content" name="content"
+                                                                rows="5"
+                                                                placeholder="Type your WhatsApp message here..."
+                                                                required></textarea>
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-center mt-2">
+                                                                <div class="char-counter">
                                                                     <span id="charCount">0</span>/500 characters
                                                                 </div>
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-lightbulb me-1"></i>Use templates
+                                                                    or personalize your message
+                                                                </small>
                                                             </div>
+                                                            <div id="messagePreview" class="message-preview d-none">
+                                                                <strong>Preview:</strong> <span id="previewText"></span>
+                                                            </div>
+                                                        </div>
 
-                                                            <div class="mb-3">
-                                                                <label for="type" class="form-label">Message
-                                                                    Type</label>
-                                                                <select class="form-select" id="type" name="type">
-                                                                    <option value="manual">Manual</option>
-                                                                    <option value="initial">Initial</option>
-                                                                    <option value="followup">Follow-up</option>
-                                                                </select>
-                                                            </div>
+                                                        <div class="mb-4">
+                                                            <label for="type" class="form-label fw-semibold">
+                                                                <i class="fas fa-tag me-2"></i>Message Type
+                                                            </label>
+                                                            <select class="form-select" id="type" name="type">
+                                                                <option value="manual">Manual Message</option>
+                                                                <option value="initial">Initial Contact</option>
+                                                                <option value="followup">Follow-up Message</option>
+                                                            </select>
+                                                        </div>
 
-                                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                                                <button type="button" class="btn btn-outline-secondary"
-                                                                    onclick="clearForm()">
-                                                                    <i class="fas fa-times me-1"></i>Clear
-                                                                </button>
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="fas fa-paper-plane me-1"></i>Send Message
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                    </div>
+                                                        <div class="d-flex gap-3 justify-content-end">
+                                                            <button type="button" class="btn btn-outline-secondary"
+                                                                onclick="clearForm()">
+                                                                <i class="fas fa-times me-2"></i>Clear Form
+                                                            </button>
+                                                            <button type="submit" class="btn btn-whatsapp">
+                                                                <i class="fab fa-whatsapp me-2"></i>Send Message
+                                                            </button>
+                                                        </div>
+                                                    </form>
                                 </div>
                             </div>
 
                             <div class="col-md-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Quick Templates</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                onclick="useTemplate('initial')">
-                                                Initial Contact
-                                            </button>
-                                            <button class="btn btn-outline-warning btn-sm"
-                                                onclick="useTemplate('followup')">
-                                                Follow-up
-                                            </button>
-                                            <button class="btn btn-outline-success btn-sm"
-                                                onclick="useTemplate('consultation')">
-                                                Consultation
-                                            </button>
-                                            <button class="btn btn-outline-info btn-sm" onclick="useTemplate('offer')">
-                                                Special Offer
-                                            </button>
-                                        </div>
+                                <div class="template-card">
+                                    <h5 class="mb-3"><i class="fas fa-magic me-2 text-primary"></i>Quick Templates</h5>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn template-btn" onclick="useTemplate('initial')">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-handshake me-2 text-primary"></i>
+                                                <div>
+                                                    <div class="fw-bold">Initial Contact</div>
+                                                    <small class="text-muted">Welcome new customers</small>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="btn template-btn" onclick="useTemplate('followup')">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-clock me-2 text-warning"></i>
+                                                <div>
+                                                    <div class="fw-bold">Follow-up</div>
+                                                    <small class="text-muted">Check in with customers</small>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="btn template-btn" onclick="useTemplate('consultation')">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-calendar me-2 text-success"></i>
+                                                <div>
+                                                    <div class="fw-bold">Consultation</div>
+                                                    <small class="text-muted">Schedule meetings</small>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <button class="btn template-btn" onclick="useTemplate('offer')">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-gift me-2 text-danger"></i>
+                                                <div>
+                                                    <div class="fw-bold">Special Offer</div>
+                                                    <small class="text-muted">Promote deals</small>
+                                                </div>
+                                            </div>
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div class="card mt-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Active Users</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <% if (users.length===0) { %>
-                                            <p class="text-muted">No active users</p>
-                                            <% } else { %>
-                                                <div class="list-group list-group-flush">
-                                                    <% users.slice(0, 5).forEach(user=> { %>
-                                                        <div
-                                                            class="list-group-item d-flex justify-content-between align-items-center p-2">
-                                                            <div>
-                                                                <div class="fw-bold">
-                                                                    <%= user.name %>
+                                <div class="users-card">
+                                    <h5 class="mb-3"><i class="fas fa-users me-2 text-info"></i>Recent Customers</h5>
+                                    <% if (users.length===0) { %>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fas fa-user-plus fa-2x mb-2 opacity-50"></i>
+                                            <p class="mb-0">No customers yet</p>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="customer-list">
+                                                <% users.slice(0, 5).forEach(user=> { %>
+                                                    <div class="user-item">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="user-avatar me-3">
+                                                                    <%= user.name.substring(0, 1).toUpperCase() %>
                                                                 </div>
-                                                                <small class="text-muted">
-                                                                    <%= user.phone %>
-                                                                </small>
+                                                                <div>
+                                                                    <div class="fw-bold">
+                                                                        <%= user.name %>
+                                                                    </div>
+                                                                    <small class="text-muted">
+                                                                        <i class="fab fa-whatsapp me-1"></i>
+                                                                        <%= user.phoneNumber || user.phone %>
+                                                                    </small>
+                                                                </div>
                                                             </div>
-                                                            <button class="btn btn-sm btn-outline-primary"
+                                                            <button class="btn btn-sm btn-outline-success"
                                                                 onclick="selectUser('<%= user.id %>')">
-                                                                Select
+                                                                <i class="fas fa-check"></i>
                                                             </button>
                                                         </div>
-                                                        <% }); %>
+                                                    </div>
+                                                    <% }); %>
+                                            </div>
+                                            <% if (users.length> 5) { %>
+                                                <div class="text-center mt-3">
+                                                    <small class="text-muted">+<%= users.length - 5 %> more
+                                                            customers</small>
                                                 </div>
                                                 <% } %>
-                                    </div>
+                                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -195,46 +383,130 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             const templates = {
-                initial: "Hi {name}! Thanks for your interest in our services. Would you like to schedule a consultation?",
-                followup: "Hi {name}! Following up on our previous conversation. Are you still interested in our services?",
-                consultation: "Hi {name}! I'd love to schedule a consultation with you. When would be a good time for you?",
-                offer: "Hi {name}! We have a special offer on our premium package. Are you interested in learning more?"
+                initial: "Hello {name}! 👋\n\nThank you for your interest in our services. I'm excited to help you achieve your goals!\n\nWould you like to schedule a quick consultation to discuss how we can best serve you?\n\nBest regards,\nYour WhatsAble Team 🚀",
+                followup: "Hi {name}! 😊\n\nI hope you're doing well! I wanted to follow up on our previous conversation.\n\nAre you still interested in our services? I'd love to help you move forward with your project.\n\nLet me know if you have any questions!\n\nBest,\nYour WhatsAble Team",
+                consultation: "Hello {name}! 📅\n\nI'd love to schedule a personalized consultation with you to understand your needs better.\n\nWhen would be the best time for you this week? I'm flexible and can work around your schedule.\n\nLooking forward to our conversation!\n\nWarm regards,\nYour WhatsAble Team",
+                offer: "🎉 Special Offer for {name}! 🎉\n\nWe have an exclusive offer on our premium package that I think you'd love!\n\n✨ Limited time discount\n✨ Additional features included\n✨ Priority support\n\nAre you interested in learning more about this special deal?\n\nDon't miss out - offer expires soon! ⏰"
             };
 
             function useTemplate(type) {
                 const content = document.getElementById('content');
-                content.value = templates[type];
+                const selectedUser = document.getElementById('userId');
+                let template = templates[type];
+
+                // Replace {name} placeholder if user is selected
+                if (selectedUser.value) {
+                    const userName = selectedUser.options[selectedUser.selectedIndex].text.split(' (')[0];
+                    template = template.replace(/{name}/g, userName);
+                }
+
+                content.value = template;
                 updateCharCount();
+                showPreview();
+
+                // Add visual feedback
+                content.focus();
+                content.style.borderColor = '#25d366';
+                setTimeout(() => {
+                    content.style.borderColor = '';
+                }, 1000);
             }
 
             function selectUser(userId) {
                 const userSelect = document.getElementById('userId');
                 userSelect.value = userId;
+                userSelect.style.borderColor = '#25d366';
+                setTimeout(() => {
+                    userSelect.style.borderColor = '';
+                }, 1000);
+
+                // Update template preview if content exists
+                const content = document.getElementById('content').value;
+                if (content.includes('{name}')) {
+                    const userName = userSelect.options[userSelect.selectedIndex].text.split(' (')[0];
+                    document.getElementById('content').value = content.replace(/{name}/g, userName);
+                    updateCharCount();
+                    showPreview();
+                }
             }
 
             function clearForm() {
                 document.getElementById('userId').value = '';
                 document.getElementById('content').value = '';
                 document.getElementById('type').value = 'manual';
+                document.getElementById('messagePreview').classList.add('d-none');
                 updateCharCount();
             }
 
             function updateCharCount() {
                 const content = document.getElementById('content');
                 const charCount = document.getElementById('charCount');
-                charCount.textContent = content.value.length;
+                const length = content.value.length;
 
-                if (content.value.length > 500) {
-                    charCount.style.color = 'red';
-                } else {
-                    charCount.style.color = '';
+                charCount.textContent = length;
+                charCount.className = 'char-counter';
+
+                if (length > 400) {
+                    charCount.classList.add('danger');
+                } else if (length > 300) {
+                    charCount.classList.add('warning');
                 }
             }
 
-            document.getElementById('content').addEventListener('input', updateCharCount);
+            function showPreview() {
+                const content = document.getElementById('content');
+                const preview = document.getElementById('messagePreview');
+                const previewText = document.getElementById('previewText');
 
-            // Initialize character count
+                if (content.value.trim()) {
+                    previewText.textContent = content.value;
+                    preview.classList.remove('d-none');
+                } else {
+                    preview.classList.add('d-none');
+                }
+            }
+
+            // Event listeners
+            document.getElementById('content').addEventListener('input', function () {
+                updateCharCount();
+                showPreview();
+            });
+
+            document.getElementById('userId').addEventListener('change', function () {
+                const content = document.getElementById('content').value;
+                if (content.includes('{name}') && this.value) {
+                    const userName = this.options[this.selectedIndex].text.split(' (')[0];
+                    document.getElementById('content').value = content.replace(/{name}/g, userName);
+                    updateCharCount();
+                    showPreview();
+                }
+            });
+
+            // Initialize
             updateCharCount();
+
+            // Form validation
+            document.querySelector('form').addEventListener('submit', function (e) {
+                const userId = document.getElementById('userId').value;
+                const content = document.getElementById('content').value;
+
+                if (!userId || !content.trim()) {
+                    e.preventDefault();
+                    alert('⚠️ Please select a customer and enter a message before sending.');
+                    return;
+                }
+
+                if (content.length > 500) {
+                    e.preventDefault();
+                    alert('⚠️ Message is too long. Please keep it under 500 characters.');
+                    return;
+                }
+
+                // Show loading state
+                const submitBtn = document.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                submitBtn.disabled = true;
+            });
         </script>
 </body>
 

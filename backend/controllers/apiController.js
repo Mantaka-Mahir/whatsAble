@@ -2,6 +2,24 @@ const User = require('../models/User');
 const Message = require('../models/Message');
 
 class ApiController {
+    // Get all messages
+    static async getAllMessages(req, res) {
+        try {
+            const messages = Message.getAll();
+
+            res.json({
+                success: true,
+                data: messages
+            });
+        } catch (error) {
+            console.error('Error getting all messages:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve messages'
+            });
+        }
+    }
+
     // Get messages for a specific user
     static async getMessagesForUser(req, res) {
         try {

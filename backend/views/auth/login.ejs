@@ -4,9 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= title %>
-    </title>
+    <title>WhatsAble - Customer Follow-up Automation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -15,39 +13,103 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .login-card {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            max-width: 450px;
+            width: 100%;
         }
 
         .login-header {
             background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
             color: white;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
             text-align: center;
         }
 
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .brand-logo i {
+            font-size: 2rem;
+        }
+
         .login-body {
-            padding: 2rem;
+            padding: 2.5rem 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #6c757d;
+        }
+
+        .feature-list li i {
+            color: #25d366;
+            margin-right: 0.75rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 0.95rem;
         }
 
         .form-control:focus {
             border-color: #25d366;
-            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.15);
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
             border: none;
             padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
         }
 
         .btn-primary:hover {
             background: linear-gradient(135deg, #128c7e 0%, #25d366 100%);
+            transform: translateY(-1px);
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .demo-credentials {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
@@ -55,58 +117,65 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="login-card">
+            <div class="col-12">
+                <div class="login-card mx-auto">
                     <div class="login-header">
-                        <h2><i class="fab fa-whatsapp me-2"></i>AutoEngage</h2>
-                        <p class="mb-0">Sign in to your account</p>
+                        <div class="brand-logo">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h2 class="mb-2">WhatsAble</h2>
+                        <p class="mb-0 opacity-90">Customer Follow-up Automation</p>
                     </div>
                     <div class="login-body">
+                        <h4 class="mb-3 text-center">Welcome Back!</h4>
+                        <p class="text-muted text-center mb-4">Sign in to manage your customer follow-ups</p>
+
                         <% if (error) { %>
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                <%= error %>
+                            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div>
+                                    <%= error %>
+                                </div>
                             </div>
                             <% } %>
 
                                 <form method="POST" action="/auth/login">
                                     <div class="mb-3">
-                                        <label for="username" class="form-label">Username</label>
+                                        <label for="username" class="form-label fw-semibold">Email or Username</label>
                                         <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
                                             <input type="text" class="form-control" id="username" name="username"
-                                                required>
+                                                placeholder="Enter your username" required>
                                         </div>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label for="password" class="form-label">Password</label>
+                                    <div class="mb-4">
+                                        <label for="password" class="form-label fw-semibold">Password</label>
                                         <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                            <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
                                             <input type="password" class="form-control" id="password" name="password"
-                                                required>
+                                                placeholder="Enter your password" required>
                                         </div>
                                     </div>
 
-                                    <div class="d-grid">
+                                    <div class="d-grid mb-3">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                            <i class="fas fa-sign-in-alt me-2"></i>Sign In to Dashboard
                                         </button>
                                     </div>
                                 </form>
 
-                                <hr class="my-4">
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-chart-line"></i>Track customer engagement metrics</li>
+                                    <li><i class="fas fa-robot"></i>Automated follow-up campaigns</li>
+                                    <li><i class="fas fa-comments"></i>Manual message sending</li>
+                                    <li><i class="fas fa-bell"></i>Real-time notifications</li>
+                                </ul>
 
-                                <div class="text-center">
-                                    <p class="mb-2">Demo Credentials:</p>
-                                    <small class="text-muted">Username: <strong>admin</strong> | Password:
-                                        <strong>secret</strong></small>
-                                </div>
-
-                                <div class="text-center mt-3">
-                                    <a href="/auth/register" class="text-decoration-none">
-                                        <i class="fas fa-user-plus me-1"></i>Create new account
-                                    </a>
+                                <div class="demo-credentials text-center">
+                                    <small class="text-muted d-block mb-2">Demo Account:</small>
+                                    <small><strong>Username:</strong> admin</small><br>
+                                    <small><strong>Password:</strong> secret</small>
                                 </div>
                     </div>
                 </div>
