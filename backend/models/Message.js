@@ -16,17 +16,57 @@ class Message {
             .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
     }
 
+    static getConversationMessages(userId, telegramId = null) {
+        // Get messages for a specific conversation (WhatsApp-style)
+        const messages = database.messages
+            .filter(message => {
+                if (telegramId) {
+                    return message.userId === userId || message.telegramId === telegramId;
+                }
+                return message.userId === userId;
+            })
+            .sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
+
+        // Format messages in WhatsApp-style conversation format
+        return messages.map(message => ({
+            id: message.id,
+            content: message.content,
+            sender: {
+                id: message.isFromCustomer ? userId : 'admin',
+                type: message.isFromCustomer ? 'customer' : 'admin',
+                name: message.isFromCustomer ? 'Customer' : 'WhatsAble Assistant'
+            },
+            timestamp: message.sentAt,
+            status: message.status,
+            isRead: message.isRead,
+            type: message.type,
+            source: message.source,
+            replies: message.replies || []
+        }));
+    }
+
     static create(messageData) {
         const message = {
             id: uuidv4(),
             userId: messageData.userId,
+            telegramId: messageData.telegramId || null,
             content: messageData.content,
-            type: messageData.type || 'initial', // 'initial', 'followup', 'manual'
-            status: messageData.status || 'pending', // 'pending', 'delivered', 'failed'
+            type: messageData.type || 'initial', // 'initial', 'followup', 'manual', 'response', 'automated'
+            status: messageData.status || 'pending', // 'pending', 'delivered', 'failed', 'received', 'read'
             isRead: false,
             sentAt: new Date(),
             readAt: null,
-            replies: []
+            replies: [],
+            source: messageData.source || 'manual', // 'manual', 'n8n', 'telegram', 'whatsapp'
+            isFromCustomer: messageData.isFromCustomer || false,
+            // WhatsApp-style metadata
+            conversationId: messageData.conversationId || null,
+            replyTo: messageData.replyTo || null,
+            metadata: {
+                automated: messageData.automated || false,
+                originalMessageId: messageData.originalMessageId || null,
+                platform: messageData.platform || 'telegram'
+            }
         };
 
         database.messages.push(message);
@@ -103,12 +143,17 @@ class Message {
     }
 
     static getPendingFollowups() {
-        const thirtySecondsAgo = new Date(Date.now() - 30000);
+        // Return messages that either:
+        // 1. Are explicitly marked as needing followup, OR
+        // 2. Are unread system messages that were sent more than a day ago
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         return database.messages.filter(message =>
-            message.type === 'initial' &&
-            !message.isRead &&
-            message.replies.length === 0 &&
-            new Date(message.sentAt) <= thirtySecondsAgo
+            // Explicitly marked messages
+            (message.needsFollowup === true) ||
+            // Older unread system messages
+            (!message.isFromCustomer &&
+                !message.isRead &&
+                new Date(message.sentAt) <= oneDayAgo)
         );
     }
 }

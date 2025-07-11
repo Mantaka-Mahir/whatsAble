@@ -7,8 +7,11 @@ class UsersProvider with ChangeNotifier {
 
   List<User> _users = [];
   bool _isLoading = false;
+  bool _isInitialized = false; // Track if data has been loaded at least once
+  bool _isRefreshing = false; // Track background refresh
   String? _errorMessage;
   String _searchQuery = '';
+  DateTime? _lastLoadTime;
 
   List<User> get users => _searchQuery.isEmpty
       ? _users
@@ -19,29 +22,48 @@ class UsersProvider with ChangeNotifier {
           .toList();
 
   bool get isLoading => _isLoading;
+  bool get isRefreshing => _isRefreshing;
+  bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
   String get searchQuery => _searchQuery;
+  DateTime? get lastLoadTime => _lastLoadTime;
 
-  Future<void> loadUsers({bool refresh = false}) async {
+  // Enhanced loading method with background refresh support
+  Future<void> loadUsers({bool refresh = false, bool silent = false}) async {
+    // If already loading, prevent duplicate requests
     if (_isLoading) return;
 
-    if (refresh) {
-      _users.clear();
+    // If we have data and this isn't a forced refresh, just return the cached data
+    if (_isInitialized && !refresh && _users.isNotEmpty) {
+      return;
     }
 
-    _isLoading = true;
+    // Set appropriate loading states
+    if (silent) {
+      _isRefreshing = true;
+    } else {
+      _isLoading = true;
+    }
     _errorMessage = null;
     notifyListeners();
 
     try {
       final newUsers = await _apiService.getAllUsers();
       _users = newUsers;
+      _isInitialized = true;
+      _lastLoadTime = DateTime.now();
     } catch (e) {
       _errorMessage = e.toString().replaceAll('ApiException: ', '');
     }
 
     _isLoading = false;
+    _isRefreshing = false;
     notifyListeners();
+  }
+
+  // Background refresh - doesn't show loading indicator
+  Future<void> refreshInBackground() async {
+    await loadUsers(refresh: true, silent: true);
   }
 
   void searchUsers(String query) {

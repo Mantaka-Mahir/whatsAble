@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Message = require('../models/Message');
+const Conversation = require('../models/Conversation');
 
 class ApiController {
     // Get all messages
@@ -331,6 +332,577 @@ class ApiController {
             res.status(500).json({
                 success: false,
                 message: 'Failed to retrieve dashboard statistics'
+            });
+        }
+    }
+
+    // N8N Integration Methods
+    static async handleN8nNewLead(req, res) {
+        try {
+            const { name, phone, email, source, telegram_id } = req.body;
+
+            console.log('🔥 N8N New Lead:', { name, phone, email, source, telegram_id });
+
+            // Check if user already exists
+            let user = User.getByPhone(phone) || User.getByEmail(email);
+
+            if (!user) {
+                user = User.create({
+                    name: name || 'Unknown',
+                    phoneNumber: phone,
+                    email: email || '',
+                    status: 'active',
+                    telegramId: telegram_id || null,
+                    source: source || 'n8n'
+                });
+                console.log('👤 New user created from n8n:', user.name);
+            } else {
+                // Update existing user with new info
+                if (telegram_id && !user.telegramId) {
+                    user.telegramId = telegram_id;
+                }
+                console.log('👤 Existing user found:', user.name);
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    user: user,
+                    message: 'Lead processed successfully'
+                }
+            });
+        } catch (error) {
+            console.error('Error processing n8n new lead:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to process new lead'
+            });
+        }
+    }
+
+    static async handleN8nSendMessage(req, res) {
+        try {
+            const { user_id, phone, content, type = 'automated', telegram_id } = req.body;
+
+            console.log('💬 N8N Send Message:', { user_id, phone, content, type, telegram_id });
+
+            // Find user by ID, phone, or telegram_id
+            let user = null;
+            if (user_id) {
+                user = User.getById(user_id);
+                console.log('Found user by ID:', user?.name);
+            } else if (phone) {
+                user = User.getByPhone(phone);
+                console.log('Found user by phone:', user?.name);
+            } else if (telegram_id) {
+                user = User.getByTelegramId(telegram_id);
+                console.log('Found user by telegram_id:', user?.name);
+            }
+
+            if (!user) {
+                console.log('User not found with criteria:', { user_id, phone, telegram_id });
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            // Create or get conversation
+            let conversation = Conversation.getByUserId(user.id);
+            if (!conversation && user.telegramId) {
+                conversation = Conversation.getByTelegramId(user.telegramId);
+            }
+
+            if (!conversation) {
+                conversation = Conversation.create({
+                    userId: user.id,
+                    telegramId: user.telegramId,
+                    phoneNumber: user.phoneNumber,
+                    customerName: user.name,
+                    source: user.source || 'telegram'
+                });
+                console.log('✅ Created new conversation for n8n message:', conversation.id);
+            }
+
+            // Add message to conversation
+            const conversationMessage = Conversation.addMessage(conversation.id, {
+                content: content,
+                senderId: 'admin',
+                senderType: 'admin',
+                senderName: 'WhatsAble Assistant',
+                type: type,
+                source: 'n8n',
+                automated: true
+            });
+
+            // Also create legacy message for backward compatibility
+            const message = Message.create({
+                userId: user.id,
+                telegramId: user.telegramId,
+                content: content,
+                type: type,
+                status: 'delivered',
+                source: 'n8n',
+                conversationId: conversation.id,
+                isFromCustomer: false,
+                automated: true
+            });
+
+            console.log('💬 Message sent via n8n to:', user.name);
+
+            res.json({
+                success: true,
+                data: {
+                    message: message,
+                    conversationMessage: conversationMessage,
+                    conversation: conversation,
+                    user: user
+                }
+            });
+        } catch (error) {
+            console.error('Error sending message via n8n:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to send message'
+            });
+        }
+    }
+
+    static async handleN8nProcessResponse(req, res) {
+        try {
+            const { user_id, phone, telegram_id, response_text, original_message_id } = req.body;
+
+            console.log('📥 N8N Process Response:', { user_id, phone, telegram_id, response_text, original_message_id });
+
+            // Find user
+            let user = null;
+            if (user_id) {
+                user = User.getById(user_id);
+            } else if (phone) {
+                user = User.getByPhone(phone);
+            } else if (telegram_id) {
+                user = User.getByTelegramId(telegram_id);
+            }
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            // Get or create conversation
+            let conversation = Conversation.getByUserId(user.id);
+            if (!conversation && user.telegramId) {
+                conversation = Conversation.getByTelegramId(user.telegramId);
+            }
+
+            if (!conversation) {
+                conversation = Conversation.create({
+                    userId: user.id,
+                    telegramId: user.telegramId,
+                    phoneNumber: user.phoneNumber,
+                    customerName: user.name,
+                    source: user.source || 'telegram'
+                });
+                console.log('✅ Created new conversation for customer response:', conversation.id);
+            }
+
+            // Add customer message to conversation
+            const conversationMessage = Conversation.addMessage(conversation.id, {
+                content: response_text,
+                senderId: user.id,
+                senderType: 'customer',
+                senderName: user.name,
+                type: 'text',
+                source: 'telegram'
+            });
+
+            // Create incoming message (customer response) - legacy compatibility
+            const incomingMessage = Message.create({
+                userId: user.id,
+                telegramId: user.telegramId,
+                content: response_text,
+                type: 'response',
+                status: 'received',
+                source: 'telegram',
+                isFromCustomer: true,
+                conversationId: conversation.id
+            });
+
+            // Mark original message as read if provided
+            if (original_message_id) {
+                Message.markAsRead(original_message_id);
+            }
+
+            console.log('📨 Customer response processed:', user.name);
+
+            res.json({
+                success: true,
+                data: {
+                    user: user,
+                    incomingMessage: incomingMessage,
+                    conversationMessage: conversationMessage,
+                    conversation: conversation,
+                    shouldFollowUp: true // Let n8n decide follow-up logic
+                }
+            });
+        } catch (error) {
+            console.error('Error processing response via n8n:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to process response'
+            });
+        }
+    }
+
+    static async getN8nUsers(req, res) {
+        try {
+            const users = User.getAll();
+
+            // Format for n8n consumption
+            const n8nUsers = users.map(user => ({
+                id: user.id,
+                name: user.name,
+                phone: user.phoneNumber,
+                email: user.email,
+                telegram_id: user.telegramId,
+                status: user.isActive ? 'active' : 'inactive',
+                created_at: user.createdAt,
+                message_count: Message.getByUserId(user.id).length,
+                unread_count: Message.getByUserId(user.id).filter(msg => !msg.isRead).length
+            }));
+
+            res.json({
+                success: true,
+                data: n8nUsers
+            });
+        } catch (error) {
+            console.error('Error getting users for n8n:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve users'
+            });
+        }
+    }
+
+    static async getN8nPendingFollowups(req, res) {
+        try {
+            const pendingFollowups = Message.getPendingFollowups();
+
+            // Format for n8n with user details
+            const n8nFollowups = pendingFollowups.map(message => {
+                const user = User.getById(message.userId);
+                return {
+                    message_id: message.id,
+                    user_id: user.id,
+                    user_name: user.name,
+                    user_phone: user.phoneNumber,
+                    user_telegram_id: user.telegramId,
+                    original_content: message.content,
+                    sent_at: message.sentAt,
+                    hours_since_sent: Math.floor((Date.now() - new Date(message.sentAt).getTime()) / (1000 * 60 * 60))
+                };
+            });
+
+            res.json({
+                success: true,
+                data: n8nFollowups
+            });
+        } catch (error) {
+            console.error('Error getting pending followups for n8n:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve pending followups'
+            });
+        }
+    }
+
+    static async markN8nProcessed(req, res) {
+        try {
+            const { message_id, user_id, action } = req.body;
+
+            console.log('✅ N8N Mark Processed:', { message_id, user_id, action });
+
+            if (message_id) {
+                Message.markAsRead(message_id);
+            }
+
+            // You could add more tracking here for n8n actions
+            res.json({
+                success: true,
+                message: 'Marked as processed'
+            });
+        } catch (error) {
+            console.error('Error marking as processed:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to mark as processed'
+            });
+        }
+    }
+
+    static async n8nHealthCheck(req, res) {
+        try {
+            const stats = {
+                timestamp: new Date().toISOString(),
+                status: 'healthy',
+                users_count: User.getAll().length,
+                messages_count: Message.getAll().length,
+                pending_followups: Message.getPendingFollowups().length,
+                conversations_count: Conversation.getAll().length,
+                active_conversations: Conversation.getActiveConversations().length,
+                unread_conversations: Conversation.getUnreadConversations().length
+            };
+
+            res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error) {
+            console.error('Error in n8n health check:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Health check failed'
+            });
+        }
+    }
+
+    // === CONVERSATION ENDPOINTS ===
+
+    // Get all conversations (for admin dashboard)
+    static async getAllConversations(req, res) {
+        try {
+            const conversations = Conversation.getAll();
+
+            res.json({
+                success: true,
+                data: conversations
+            });
+        } catch (error) {
+            console.error('Error getting conversations:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve conversations'
+            });
+        }
+    }
+
+    // Get conversation for a specific user (WhatsApp-style)
+    static async getConversation(req, res) {
+        try {
+            const { userId } = req.params;
+            const { limit = 50 } = req.query;
+
+            // Validate user exists
+            const user = User.getById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            // Get or create conversation
+            let conversation = Conversation.getByUserId(userId);
+            if (!conversation) {
+                conversation = Conversation.create({
+                    userId: userId,
+                    telegramId: user.telegramId,
+                    phoneNumber: user.phoneNumber,
+                    customerName: user.name,
+                    source: user.source || 'telegram'
+                });
+            }
+
+            // Get conversation history
+            const conversationHistory = Conversation.getConversationHistory(conversation.id, parseInt(limit));
+
+            // Also get legacy messages and convert them
+            const legacyMessages = Message.getConversationMessages(userId, user.telegramId);
+
+            res.json({
+                success: true,
+                data: {
+                    conversation: conversationHistory?.conversation || conversation,
+                    messages: conversationHistory?.messages || [],
+                    legacyMessages: legacyMessages,
+                    user: user
+                }
+            });
+        } catch (error) {
+            console.error('Error getting conversation:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve conversation'
+            });
+        }
+    }
+
+    // Add message to conversation
+    static async addMessageToConversation(req, res) {
+        try {
+            const { conversationId } = req.params;
+            const { content, senderType = 'admin', senderId = 'admin', senderName = 'WhatsAble Assistant', type = 'text', source = 'manual' } = req.body;
+
+            const conversation = Conversation.getById(conversationId);
+            if (!conversation) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Conversation not found'
+                });
+            }
+
+            const message = Conversation.addMessage(conversationId, {
+                content: content,
+                senderId: senderId,
+                senderType: senderType,
+                senderName: senderName,
+                type: type,
+                source: source,
+                automated: source === 'n8n'
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    message: message,
+                    conversation: conversation
+                }
+            });
+        } catch (error) {
+            console.error('Error adding message to conversation:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to add message to conversation'
+            });
+        }
+    }
+
+    // Mark conversation as read
+    static async markConversationAsRead(req, res) {
+        try {
+            const { conversationId } = req.params;
+            const { readerType = 'admin' } = req.body;
+
+            const success = Conversation.markAsRead(conversationId, readerType);
+            if (!success) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Conversation not found'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Conversation marked as read'
+            });
+        } catch (error) {
+            console.error('Error marking conversation as read:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to mark conversation as read'
+            });
+        }
+    }
+
+    // === N8N CONVERSATION ENDPOINTS ===
+
+    // Get conversation for n8n workflow
+    static async getN8nConversation(req, res) {
+        try {
+            const { userId } = req.params;
+            const { telegram_id, limit = 20 } = req.query;
+
+            console.log('🔍 N8N Getting conversation for:', { userId, telegram_id, limit });
+
+            // Find user by ID or telegram_id
+            let user = null;
+            if (userId && userId !== 'undefined') {
+                user = User.getById(userId);
+            } else if (telegram_id) {
+                user = User.getByTelegramId(telegram_id);
+            }
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            // Get or create conversation
+            let conversation = Conversation.getByUserId(user.id);
+            if (!conversation && user.telegramId) {
+                conversation = Conversation.getByTelegramId(user.telegramId);
+            }
+
+            if (!conversation) {
+                conversation = Conversation.create({
+                    userId: user.id,
+                    telegramId: user.telegramId,
+                    phoneNumber: user.phoneNumber,
+                    customerName: user.name,
+                    source: user.source || 'telegram'
+                });
+                console.log('✅ Created new conversation:', conversation.id);
+            }
+
+            // Get conversation history
+            const conversationHistory = Conversation.getConversationHistory(conversation.id, parseInt(limit));
+
+            // Format for n8n consumption
+            const formattedMessages = conversationHistory?.messages?.map(msg => ({
+                role: msg.sender.type === 'customer' ? 'user' : 'assistant',
+                content: msg.content,
+                timestamp: msg.sentAt,
+                type: msg.type
+            })) || [];
+
+            res.json({
+                success: true,
+                data: {
+                    conversation_id: conversation.id,
+                    user_id: user.id,
+                    telegram_id: user.telegramId,
+                    user_name: user.name,
+                    messages: formattedMessages,
+                    message_count: formattedMessages.length
+                }
+            });
+        } catch (error) {
+            console.error('Error getting n8n conversation:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve conversation'
+            });
+        }
+    }
+
+    // Get all conversations for n8n
+    static async getN8nConversations(req, res) {
+        try {
+            const conversations = Conversation.getActiveConversations();
+
+            const formattedConversations = conversations.map(conv => ({
+                conversation_id: conv.id,
+                user_id: conv.userId,
+                telegram_id: conv.telegramId,
+                status: conv.status,
+                last_message_at: conv.lastMessageAt,
+                unread_count: conv.metadata.unreadCount,
+                message_count: conv.messages.length
+            }));
+
+            res.json({
+                success: true,
+                data: formattedConversations
+            });
+        } catch (error) {
+            console.error('Error getting n8n conversations:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve conversations'
             });
         }
     }

@@ -6,6 +6,7 @@ import '../providers/users_provider.dart';
 import '../models/message.dart';
 import '../models/user.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/loading_overlay.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -26,13 +27,29 @@ class _MessagesScreenState extends State<MessagesScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MessagesProvider>().loadAllMessages();
-      context.read<UsersProvider>().loadUsers();
+      final messagesProvider = context.read<MessagesProvider>();
+      final usersProvider = context.read<UsersProvider>();
+
+      // Load data only if not already loaded
+      if (!messagesProvider.isInitialized) {
+        messagesProvider.loadAllMessages();
+      }
+
+      if (!usersProvider.isInitialized) {
+        usersProvider.loadUsers();
+      }
     });
 
     _searchController.addListener(() {
       context.read<MessagesProvider>().searchMessages(_searchController.text);
     });
+  }
+
+  Future<void> _refreshData() async {
+    await Future.wait([
+      context.read<MessagesProvider>().refreshInBackground(),
+      context.read<UsersProvider>().refreshInBackground()
+    ]);
   }
 
   @override
@@ -54,7 +71,7 @@ class _MessagesScreenState extends State<MessagesScreen>
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<MessagesProvider>().loadAllMessages(),
+            onPressed: _refreshData,
           ),
         ],
         bottom: TabBar(
@@ -68,21 +85,68 @@ class _MessagesScreenState extends State<MessagesScreen>
         ),
       ),
       drawer: const AppDrawer(),
-      body: Column(
-        children: [
-          _buildSearchAndFilters(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+      body: Consumer<MessagesProvider>(
+        builder: (context, messagesProvider, child) {
+          // Show loading indicator only on first load
+          if (messagesProvider.isLoading && messagesProvider.messages.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // Show error if no data and we have an error
+          if (messagesProvider.errorMessage != null &&
+              messagesProvider.messages.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load messages',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    messagesProvider.errorMessage!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () =>
+                        messagesProvider.loadAllMessages(refresh: true),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ContentLoadingOverlay(
+            isLoading: messagesProvider.isRefreshing,
+            child: Column(
               children: [
-                _buildMessagesList(),
-                _buildMessagesList(statusFilter: MessageStatus.sent),
-                _buildMessagesList(statusFilter: MessageStatus.delivered),
-                _buildMessagesList(statusFilter: MessageStatus.read),
+                _buildSearchAndFilters(),
+                Expanded(
+                  child: RefreshIndicatorWrapper(
+                    onRefresh: _refreshData,
+                    isRefreshing: messagesProvider.isRefreshing,
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildMessagesList(),
+                        _buildMessagesList(statusFilter: MessageStatus.sent),
+                        _buildMessagesList(
+                            statusFilter: MessageStatus.delivered),
+                        _buildMessagesList(statusFilter: MessageStatus.read),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showSendMessageDialog(),
@@ -196,34 +260,6 @@ class _MessagesScreenState extends State<MessagesScreen>
   Widget _buildMessagesList({MessageStatus? statusFilter}) {
     return Consumer2<MessagesProvider, UsersProvider>(
       builder: (context, messagesProvider, usersProvider, child) {
-        if (messagesProvider.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (messagesProvider.errorMessage != null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                const SizedBox(height: 16),
-                Text(
-                  'Error: ${messagesProvider.errorMessage}',
-                  style: TextStyle(color: Colors.red[700]),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => messagesProvider.loadAllMessages(),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          );
-        }
-
         List<Message> messages = messagesProvider.messages;
         if (statusFilter != null) {
           messages = messages.where((m) => m.status == statusFilter).toList();
@@ -262,20 +298,17 @@ class _MessagesScreenState extends State<MessagesScreen>
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () => messagesProvider.loadAllMessages(),
-          child: ListView.builder(
-            itemCount: messages.length,
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (context, index) {
-              final message = messages[index];
-              final user = usersProvider.users
-                  .where((u) => u.id == message.userId)
-                  .firstOrNull;
+        return ListView.builder(
+          itemCount: messages.length,
+          padding: const EdgeInsets.all(16),
+          itemBuilder: (context, index) {
+            final message = messages[index];
+            final user = usersProvider.users
+                .where((u) => u.id == message.userId)
+                .firstOrNull;
 
-              return _buildMessageCard(message, user);
-            },
-          ),
+            return _buildMessageCard(message, user);
+          },
         );
       },
     );

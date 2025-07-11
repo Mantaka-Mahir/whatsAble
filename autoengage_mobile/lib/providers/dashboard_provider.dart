@@ -7,11 +7,15 @@ class DashboardProvider with ChangeNotifier {
 
   DashboardStats? _stats;
   bool _isLoading = false;
+  bool _isRefreshing = false; // For background refresh
+  bool _isInitialized = false;
   String? _errorMessage;
   DateTime? _lastUpdated;
 
   DashboardStats? get stats => _stats;
   bool get isLoading => _isLoading;
+  bool get isRefreshing => _isRefreshing;
+  bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
   DateTime? get lastUpdated => _lastUpdated;
 
@@ -22,32 +26,45 @@ class DashboardProvider with ChangeNotifier {
     return difference.inMinutes > 5; // Refresh every 5 minutes
   }
 
-  Future<void> loadDashboardStats({bool forceRefresh = false}) async {
+  Future<void> loadDashboardStats(
+      {bool forceRefresh = false, bool silent = false}) async {
     if (_isLoading) return;
 
     if (!forceRefresh && !shouldRefresh && _stats != null) {
       return; // Use cached data
     }
 
-    _isLoading = true;
+    // Set appropriate loading states
+    if (silent) {
+      _isRefreshing = true;
+    } else {
+      _isLoading = true;
+    }
+
     _errorMessage = null;
     notifyListeners();
 
     try {
       _stats = await _apiService.getDashboardStats();
       _lastUpdated = DateTime.now();
+      _isInitialized = true;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('ApiException: ', '');
       debugPrint('Error loading dashboard stats: $e');
     } finally {
       _isLoading = false;
+      _isRefreshing = false;
       notifyListeners();
     }
   }
 
   Future<void> refreshStats() async {
-    await loadDashboardStats(forceRefresh: true);
+    await loadDashboardStats(forceRefresh: true, silent: false);
+  }
+
+  Future<void> refreshInBackground() async {
+    await loadDashboardStats(forceRefresh: true, silent: true);
   }
 
   void clearError() {

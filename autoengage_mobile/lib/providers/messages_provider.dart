@@ -8,12 +8,15 @@ class MessagesProvider with ChangeNotifier {
   List<Message> _messages = [];
   List<Message> _filteredMessages = [];
   bool _isLoading = false;
+  bool _isRefreshing = false;
+  bool _isInitialized = false;
   String? _errorMessage;
   String? _selectedUserId;
   String _searchQuery = '';
   String _sortOrder = 'newest';
   String _typeFilter = 'all';
   List<MessageStatus> _statusFilter = [];
+  DateTime? _lastLoadTime;
 
   List<Message> get messages => _searchQuery.isNotEmpty ||
           _typeFilter != 'all' ||
@@ -21,25 +24,49 @@ class MessagesProvider with ChangeNotifier {
       ? _filteredMessages
       : _messages;
   bool get isLoading => _isLoading;
+  bool get isRefreshing => _isRefreshing;
+  bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
   String? get selectedUserId => _selectedUserId;
+  DateTime? get lastLoadTime => _lastLoadTime;
 
-  Future<void> loadAllMessages() async {
+  Future<void> loadAllMessages(
+      {bool refresh = false, bool silent = false}) async {
+    // If already loading, prevent duplicate requests
     if (_isLoading) return;
 
-    _isLoading = true;
+    // Use cached data if available and not forced to refresh
+    if (_isInitialized && !refresh && _messages.isNotEmpty) {
+      return;
+    }
+
+    // Set appropriate loading states
+    if (silent) {
+      _isRefreshing = true;
+    } else {
+      _isLoading = true;
+    }
+
     _errorMessage = null;
     notifyListeners();
 
     try {
       _messages = await _apiService.getAllMessages();
       _applyFilters();
+      _isInitialized = true;
+      _lastLoadTime = DateTime.now();
     } catch (e) {
       _errorMessage = e.toString().replaceAll('ApiException: ', '');
     }
 
     _isLoading = false;
+    _isRefreshing = false;
     notifyListeners();
+  }
+
+  // Background refresh - doesn't show full loading indicator
+  Future<void> refreshInBackground() async {
+    await loadAllMessages(refresh: true, silent: true);
   }
 
   Future<void> loadUserMessages(String userId) async {

@@ -22,13 +22,30 @@ class _UsersScreenState extends State<UsersScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UsersProvider>().loadUsers();
-      context.read<MessagesProvider>().loadAllMessages();
+      final usersProvider = context.read<UsersProvider>();
+      final messagesProvider = context.read<MessagesProvider>();
+
+      // Load data only if not already loaded
+      if (!usersProvider.isInitialized) {
+        usersProvider.loadUsers();
+      }
+
+      if (!messagesProvider.isInitialized) {
+        messagesProvider.loadAllMessages();
+      }
     });
 
     _searchController.addListener(() {
       context.read<UsersProvider>().searchUsers(_searchController.text);
     });
+  }
+
+  Future<void> _refreshData() async {
+    // Use silent refresh to avoid full screen loading indicator
+    await Future.wait([
+      context.read<UsersProvider>().refreshInBackground(),
+      context.read<MessagesProvider>().refreshInBackground(),
+    ]);
   }
 
   @override
@@ -42,6 +59,12 @@ class _UsersScreenState extends State<UsersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshData,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(

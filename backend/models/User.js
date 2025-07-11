@@ -11,20 +11,27 @@ class User {
     }
 
     static getByPhone(phone) {
-        return database.users.find(user => user.phone === phone);
+        return database.users.find(user => user.phoneNumber === phone);
     }
 
     static getByEmail(email) {
         return database.users.find(user => user.email === email);
     }
 
+    static getByTelegramId(telegramId) {
+        return database.users.find(user => user.telegramId === telegramId);
+    }
+
     static create(userData) {
         const user = {
             id: uuidv4(),
             name: userData.name,
-            phone: userData.phone,
+            phoneNumber: userData.phoneNumber || userData.phone,
             email: userData.email,
+            isActive: userData.status === 'active' || userData.isActive !== false,
             status: userData.status || 'active',
+            telegramId: userData.telegramId || null,
+            source: userData.source || 'manual',
             createdAt: new Date(),
             lastSeen: new Date()
         };
